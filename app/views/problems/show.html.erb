@@ -1,0 +1,59 @@
+<p id="notice"><%= notice %></p>
+
+<div class="col-12">
+  <%= render "partials/link", copy: "Back to Problems", path: problems_path, icon: "chevron-left", classes: "link--back" %>
+</div>
+
+<h1 class="col-12 col-md-6"><%= @problem.title %></h1>
+
+<div class="col-12">
+  <%= render "partials/text_card", headline: "Description", copy: @problem.body %>
+</div>
+
+<section id="test-cases" class="container">
+  <h3 class="col-12">Testcases</h3>
+    <div class="row">
+    <% if @visible_test_cases.any? %>
+      <% @visible_test_cases.each do |test_case| %>
+        <div class="col-12 col-md-4 col-lg-3 col-xl-2">
+          <%= render "partials/test_case_card_edit", test_case: test_case %>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="col-12"><%= @no_test_cases_prompt %></p>
+    <% end %>
+  </div>
+</section>
+<section id ="file-upload">
+  <%= form_for(@attempt) do |f| %>
+    <%= hidden_field_tag(:problem_id, @problem.id) %>
+    <%= f.select :language, @languages_list, :prompt => "Select Language" %>
+    <%= f.label :sourcecode, "File upload:" %>
+    <%= f.file_field :sourcecode %>
+    <%= f.submit "Submit Code", :class => "button"%>
+  <% end %>
+</section>
+<% if @problem.instructor_solution %>
+  <%if current_user.role? :instructor %>
+    <%= link_to "Show Solution", solution_problem_url(@problem.id), :class =>"button"%>
+  <%end%>
+<%end%>
+<% if current_user.role? :instructor #&& @problem.author_id == cookies.signed[:user_id]#%>
+  <section id ="solution-upload">
+    <%= form_with(:url => solution_upload_form_path_url) do |f| %>
+      <%= hidden_field_tag(:problem_id, @problem.id) %>
+      <%= f.select :language, @languages_list, :prompt => "Select Solution Code Language" %>
+      <%= f.label :solution_sourcecode, "Solution File upload:" %>
+      <%= f.file_field :solution_sourcecode %>
+      <%= f.submit submit_button_modal(@problem), :class => "button"%>
+    <% end %>
+  </section>
+<% end %>
+<div  class="layout-but">
+  <% if policy(:problem).edit? %>
+    <%= link_to "Edit this Problem", edit_problem_path(@problem), :class => "button" %>
+  <% end %> 
+  <% if policy(:problem).destroy? %>
+    <%= button_delete_modal_tag "Delete this Problem", @problem, "Problem", class: "button button--delete" %>
+  <% end %>
+</div>
